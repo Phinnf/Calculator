@@ -1,11 +1,19 @@
-﻿using System.Text.RegularExpressions;
+﻿
+using System.Text.RegularExpressions;
+// CalculatorLibrary.cs
+using System.Diagnostics;
+using System.Globalization;
+using CalculatorLibrary;
 
-namespace Calculator
+namespace CalculatorProgram
 {
+    
     internal class Program
     {
         static void Main(string[] args)
         {
+            List<string> calculatorList = new List<string>();
+            Calculator calculator = new Calculator();
             bool endApp = false;
             // Display title as the C# console calculator app.
             Console.WriteLine("Console Calculator in C#\r");
@@ -55,7 +63,7 @@ namespace Calculator
                 {
                     try
                     {
-                        result = Calculator.DoOperation(cleanNum1, cleanNum2, op);
+                        result = calculator.DoOperation(cleanNum1, cleanNum2, op);
                         if (double.IsNaN(result))
                         {
                             Console.WriteLine("This operation will result in a mathematical error.\n");
@@ -67,14 +75,51 @@ namespace Calculator
                         Console.WriteLine("Oh no! An exception occurred trying to do the math.\n - Details: " + e.Message);
                     }
                 }
+                string completeCalulator = $"{cleanNum1} {Transfer(op)} {cleanNum2} = {result}";
+
+                calculatorList.Add(completeCalulator);
+                int totalUsed = calculatorList.Count();
+                Console.WriteLine($"You have used calculator: {totalUsed} time");
                 Console.WriteLine("------------------------\n");
-
                 // Wait for the user to respond before closing.
-                Console.Write("Press 'n' and Enter to close the app, or press any other key and Enter to continue: ");
-                if (Console.ReadLine() == "n") endApp = true;
+              
+                Console.Write("Press 'n' and Enter to close the app, Press 'l' to show latest calculation, or press any other key and Enter to continue: ");
+                string? userInput = Console.ReadLine();
+                if (userInput == "n")
+                {
+                    endApp = true;
+                }
+                while (userInput == "l")
+                {
+                    string showLatestCalculation = calculatorList[calculatorList.Count() -1 ].ToString();
+                    Console.WriteLine(showLatestCalculation);
 
+                    Console.WriteLine("Do you want to use this result again to calculate y/n");
+                    userInput = Console.ReadLine();
+                    while (userInput == "y")
+                    {
+                        cleanNum1 = result;
+                        Console.WriteLine($"{cleanNum1}");
+
+                        Console.WriteLine("Enter your operation a, s, m, d");
+                        op = Console.ReadLine();
+
+                        Console.WriteLine($"Your number: {cleanNum1} {Transfer(op)} ??");
+                        numInput2 = Console.ReadLine();
+                        while (!double.TryParse(numInput2, out cleanNum2))
+                        {
+                            Console.Write("This is not valid input. Please enter a numeric value: ");
+                            numInput2 = Console.ReadLine();
+                        }
+                        result = calculator.DoOperation(cleanNum1, cleanNum2, op);
+                        Console.WriteLine("Result: " + result);
+                        Console.WriteLine("Do you want to use this result again to calculate y/n");
+                        userInput = Console.ReadLine();
+                    }
+                }
                 Console.WriteLine("\n"); // Friendly linespacing.
             }
+            calculator.Finish();
             return;
         }
         public static void ShowMenu()
@@ -86,6 +131,18 @@ namespace Calculator
             Console.WriteLine("\td - Divide");
             Console.WriteLine("\te - Exit");
             Console.WriteLine("Your option? ");
+        }
+        public static string Transfer(string original)
+        {
+            string translateOriginal = original switch
+            {
+                "a" => "+",
+                "s" => "-",
+                "m" => "*",
+                "d" => "/",
+                _ => throw new Exception("Invalid operation")
+            };
+            return translateOriginal;
         }
     }
 }
